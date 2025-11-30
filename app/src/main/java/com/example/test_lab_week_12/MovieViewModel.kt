@@ -1,28 +1,35 @@
 package com.example.test_lab_week_12
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.test_lab_week_12.Movie
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 class MovieViewModel : ViewModel() {
 
-    private lateinit var repository: MovieRepository
+    private val movieRepository = MovieRepository(MovieService.create())
 
-    val popularMovies: LiveData<List<Movie>>
-        get() = repository.movies
+    private val _popularMovies = MutableStateFlow(emptyList<Movie>())
+    val popularMovies: StateFlow<List<Movie>> = _popularMovies
 
-    val error: LiveData<String>
-        get() = repository.error
+    private val _error = MutableStateFlow("")
+    val error: StateFlow<String> = _error
 
-    fun setRepository(repository: MovieRepository) {
-        this.repository = repository
-        getPopularMovies()
+    init {
+        fetchPopularMovies()
     }
 
-    private fun getPopularMovies() {
-        viewModelScope.launch {
-            repository.fetchMovies()
+    private fun fetchPopularMovies() {
+        viewModelScope.launch(Dispatchers.IO) {
+            movieRepository.fetchMovies().catch {
+                _error.value = "An exception occurred: ${it.message}"
+            }.collect {
+                _popularMovies.value = it
+            }
         }
     }
 }
