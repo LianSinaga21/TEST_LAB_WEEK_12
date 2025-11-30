@@ -1,4 +1,4 @@
-package com.example.test_lab_week_12.model
+package com.example.test_lab_week_12
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -26,3 +26,7 @@ data class Movie(
     val voteCount: Int = 0
 )
 
+@JsonClass(generateAdapter = true)
+data class MovieResponse(
+    val results: List<Movie>
+)

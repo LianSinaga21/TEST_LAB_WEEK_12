@@ -4,9 +4,13 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.example.test_lab_week_12.model.Movie
+import androidx.lifecycle.ViewModelProvider
+import com.example.test_lab_week_12.Movie
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var movieViewModel: MovieViewModel
+
     private val movieAdapter by lazy {
         MovieAdapter(object : MovieAdapter.MovieClickListener {
             override fun onMovieClick(movie: Movie) {
@@ -21,6 +25,26 @@ class MainActivity : AppCompatActivity() {
 
         val recyclerView: RecyclerView = findViewById(R.id.movie_list)
         recyclerView.adapter = movieAdapter
+
+        val movieRepository = (application as MovieApplication).movieRepository
+
+        movieViewModel = ViewModelProvider(this)[MovieViewModel::class.java]
+        movieViewModel.setRepository(movieRepository)
+
+        observeMovies()
+        observeError()
+    }
+
+    private fun observeMovies() {
+        movieViewModel.popularMovies.observe(this) { movies ->
+            movieAdapter.addMovies(movies)
+        }
+    }
+
+    private fun observeError() {
+        movieViewModel.error.observe(this) { message ->
+            if (!message.isNullOrEmpty()) println("ERROR: $message")
+        }
     }
 
     private fun openMovieDetails(movie: Movie) {
@@ -33,3 +57,4 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 }
+
