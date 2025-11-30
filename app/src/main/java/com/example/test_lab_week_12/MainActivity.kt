@@ -10,7 +10,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
-import com.example.test_lab_week_12.Movie   // ⬅️ pakai package model yang benar
+import com.example.test_lab_week_12.Movie
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.movie_list)
         recyclerView.adapter = movieAdapter
 
+        // ViewModel dibuat langsung, karena repository dibuat di ViewModel
         movieViewModel = ViewModelProvider(this)[MovieViewModel::class.java]
 
         collectFlows()
@@ -41,14 +42,14 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
 
-                // RECEIVE movies
+                // Collect movies
                 launch {
                     movieViewModel.popularMovies.collect { movies ->
                         movieAdapter.addMovies(movies)
                     }
                 }
 
-                // RECEIVE errors
+                // Collect errors
                 launch {
                     movieViewModel.error.collect { error ->
                         if (error.isNotEmpty()) {
@@ -63,7 +64,7 @@ class MainActivity : AppCompatActivity() {
     private fun openMovieDetails(movie: Movie) {
         val intent = Intent(this, DetailsActivity::class.java).apply {
             putExtra(DetailsActivity.EXTRA_TITLE, movie.title ?: "")
-            putExtra(DetailsActivity.EXTRA_RELEASE, movie.releaseDate?.toString() ?: "")
+            putExtra(DetailsActivity.EXTRA_RELEASE, movie.releaseDate ?: "")
             putExtra(DetailsActivity.EXTRA_OVERVIEW, movie.overview ?: "")
             putExtra(DetailsActivity.EXTRA_POSTER, movie.posterPath ?: "")
         }

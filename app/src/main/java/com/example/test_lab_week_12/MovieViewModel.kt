@@ -11,11 +11,13 @@ import kotlinx.coroutines.launch
 
 class MovieViewModel : ViewModel() {
 
-    private val movieRepository = MovieRepository(MovieService.create())
+    private val repository = MovieRepository(MovieService.create())
 
-    private val _popularMovies = MutableStateFlow(emptyList<Movie>())
+    // StateFlow untuk list movie
+    private val _popularMovies = MutableStateFlow<List<Movie>>(emptyList())
     val popularMovies: StateFlow<List<Movie>> = _popularMovies
 
+    // StateFlow untuk error
     private val _error = MutableStateFlow("")
     val error: StateFlow<String> = _error
 
@@ -25,11 +27,13 @@ class MovieViewModel : ViewModel() {
 
     private fun fetchPopularMovies() {
         viewModelScope.launch(Dispatchers.IO) {
-            movieRepository.fetchMovies().catch {
-                _error.value = "An exception occurred: ${it.message}"
-            }.collect {
-                _popularMovies.value = it
-            }
+            repository.fetchMovies()
+                .catch { e ->
+                    _error.value = "An exception occurred: ${e.message}"
+                }
+                .collect { movies ->
+                    _popularMovies.value = movies // Sudah tersortir dari repository
+                }
         }
     }
 }
