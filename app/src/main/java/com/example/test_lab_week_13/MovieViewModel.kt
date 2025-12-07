@@ -1,23 +1,24 @@
-package com.example.test_lab_week_12
+package com.example.test_lab_week_13
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.test_lab_week_12.Movie
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
-class MovieViewModel : ViewModel() {
+class MovieViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = MovieRepository(MovieService.create())
+    private val repository =
+        (application as MovieApplication).movieRepository
 
-    // StateFlow untuk list movie
     private val _popularMovies = MutableStateFlow<List<Movie>>(emptyList())
     val popularMovies: StateFlow<List<Movie>> = _popularMovies
+    val popularMoviesLiveData = popularMovies.asLiveData()
 
-    // StateFlow untuk error
     private val _error = MutableStateFlow("")
     val error: StateFlow<String> = _error
 
@@ -32,7 +33,8 @@ class MovieViewModel : ViewModel() {
                     _error.value = "An exception occurred: ${e.message}"
                 }
                 .collect { movies ->
-                    _popularMovies.value = movies // Sudah tersortir dari repository
+                    println("MOVIES FETCHED = ${movies.size}")
+                    _popularMovies.value = movies
                 }
         }
     }

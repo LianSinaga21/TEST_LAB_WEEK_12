@@ -1,6 +1,5 @@
-package com.example.test_lab_week_12
+package com.example.test_lab_week_13
 
-import com.example.test_lab_week_12.PopularMoviesResponse
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
